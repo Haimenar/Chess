@@ -1,6 +1,7 @@
 package chess;
 
 import java.util.ArrayList;
+import java.util.Objects;
 import java.util.Collection;
 
 /**
@@ -16,6 +17,27 @@ public class ChessPiece {
     public ChessPiece(ChessGame.TeamColor pieceColor, ChessPiece.PieceType type) {
         this.pieceColor = pieceColor;
         this.type = type;
+    }
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ChessPiece piece = (ChessPiece) o;
+        return pieceColor == piece.pieceColor && type == piece.type;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(pieceColor, type);
+    }
+
+    @Override
+    public String toString() {
+        return "Piece:" +
+                pieceColor + " " +
+                type;
     }
 
     /**
@@ -69,11 +91,187 @@ public class ChessPiece {
         }
     }
 
+    public ArrayList<ChessMove> pawnHelper(ChessBoard board, ChessPosition myPosition){
+        ArrayList<ChessMove> moves = new ArrayList<>();
+        int row = myPosition.getRow();
+        int col = myPosition.getColumn();
+
+        if (getTeamColor() == ChessGame.TeamColor.WHITE){
+            //This piece is WHITE
+            //Diagonals
+            int[][] diagonals = {{1,1}, {1,-1}};
+
+            for(int[] diag : diagonals) {
+                int x = diag[0];
+                int y = diag[1];
+                ChessPosition newPosition = new ChessPosition(row + x, col + y);
+
+                if (isValidPosition(newPosition) && (board.getPiece(newPosition) != null && isDifferentColor(board, myPosition, newPosition))) {
+                    //Check conditions for promotion
+
+                    if (row == 7){
+                        moves.add(new ChessMove(myPosition, newPosition, PieceType.QUEEN));
+                        moves.add(new ChessMove(myPosition, newPosition, PieceType.ROOK));
+                        moves.add(new ChessMove(myPosition, newPosition, PieceType.BISHOP));
+                        moves.add(new ChessMove(myPosition, newPosition, PieceType.KNIGHT));
+                    } else {
+                        moves.add(new ChessMove(myPosition, newPosition, null));
+                    }
+                }
+            }
+
+            //Get forward once move
+            ChessPosition newPosition = new ChessPosition(row + 1, col);
+
+            if (isValidPosition(newPosition) && board.getPiece(newPosition) == null) {
+                //Check conditions for promotion
+
+                if (row == 7){
+                    moves.add(new ChessMove(myPosition, newPosition, PieceType.QUEEN));
+                    moves.add(new ChessMove(myPosition, newPosition, PieceType.ROOK));
+                    moves.add(new ChessMove(myPosition, newPosition, PieceType.BISHOP));
+                    moves.add(new ChessMove(myPosition, newPosition, PieceType.KNIGHT));
+                } else {
+                    moves.add(new ChessMove(myPosition, newPosition, null));
+                }
+            }
+            //Get double move
+            ChessPosition doublePosition = new ChessPosition(row + 2, col);
+            ChessPosition singlePosition = new ChessPosition(row + 1, col);
+
+            if (row == 2 && board.getPiece(singlePosition) == null && board.getPiece(doublePosition) == null) {
+                moves.add(new ChessMove(myPosition, doublePosition, null));
+            }
+        } else {
+            //This piece is BLACK
+            //Diagonals
+            int[][] diagonals = {{-1,1}, {-1,-1}};
+
+            for(int[] diag : diagonals) {
+                int x = diag[0];
+                int y = diag[1];
+                ChessPosition newPosition = new ChessPosition(row + x, col + y);
+
+                if (isValidPosition(newPosition) && (board.getPiece(newPosition) != null && isDifferentColor(board, myPosition, newPosition))) {
+                    //Check conditions for promotion
+
+                    if (row == 2){
+                        moves.add(new ChessMove(myPosition, newPosition, PieceType.QUEEN));
+                        moves.add(new ChessMove(myPosition, newPosition, PieceType.ROOK));
+                        moves.add(new ChessMove(myPosition, newPosition, PieceType.BISHOP));
+                        moves.add(new ChessMove(myPosition, newPosition, PieceType.KNIGHT));
+                    } else {
+                        moves.add(new ChessMove(myPosition, newPosition, null));
+                    }
+                }
+            }
+
+            //Get forward once move
+            ChessPosition newPosition = new ChessPosition(row - 1, col);
+
+            if (isValidPosition(newPosition) && board.getPiece(newPosition) == null) {
+                //Check conditions for promotion
+
+                if (row == 2){
+                    moves.add(new ChessMove(myPosition, newPosition, PieceType.QUEEN));
+                    moves.add(new ChessMove(myPosition, newPosition, PieceType.ROOK));
+                    moves.add(new ChessMove(myPosition, newPosition, PieceType.BISHOP));
+                    moves.add(new ChessMove(myPosition, newPosition, PieceType.KNIGHT));
+                } else {
+                    moves.add(new ChessMove(myPosition, newPosition, null));
+                }
+            }
+            //Get double move
+            ChessPosition doublePosition = new ChessPosition(row - 2, col);
+            ChessPosition singlePosition = new ChessPosition(row - 1, col);
+
+            if (row == 7 && board.getPiece(singlePosition) == null && board.getPiece(doublePosition) == null) {
+                moves.add(new ChessMove(myPosition, doublePosition, null));
+            }
+        }
+
+        return moves;
+    }
+
+    public ArrayList<ChessMove> kingHelper(ChessBoard board, ChessPosition myPosition) {
+        ArrayList<ChessMove> moves = new ArrayList<>();
+        int row = myPosition.getRow();
+        int col = myPosition.getColumn();
+        int[][] spots = {{1,1}, {1,-1}, {-1,1}, {-1,-1}, {1,0},{-1,0},{0,1},{0,-1}};
+
+        for(int[] spot : spots){
+            int x = spot[0];
+            int y = spot[1];
+            ChessPosition newPosition = new ChessPosition(row + x, col + y);
+
+            if(isValidPosition(newPosition) && (board.getPiece(newPosition) == null || (board.getPiece(newPosition) != null && isDifferentColor(board, myPosition, newPosition)))){
+                moves.add(new ChessMove(myPosition, newPosition, null));
+            }
+            if (isValidPosition(newPosition) && (board.getPiece(newPosition) != null && isDifferentColor(board, myPosition, newPosition))){
+                moves.add(new ChessMove(myPosition, newPosition, null));
+            }
+        }
+        return moves;
+    }
+
+    public ArrayList<ChessMove> queenHelper(ChessBoard board, ChessPosition myPosition) {
+        ArrayList<ChessMove> moves = new ArrayList<>();
+        moves.addAll(linearHelper(board, myPosition));
+        moves.addAll(diagonalHelper(board, myPosition));
+        return moves;
+    }
+
+    public ArrayList<ChessMove> knightHelper(ChessBoard board, ChessPosition myPosition) {
+        ArrayList<ChessMove> moves = new ArrayList<>();
+        int row = myPosition.getRow();
+        int col = myPosition.getColumn();
+        int[][] spots = {{2,1}, {-2,1}, {2,-1}, {-2,-1}, {1,2}, {-1,2}, {1,-2}, {-1,-2}};
+
+        for(int[] spot : spots){
+            int x = spot[0];
+            int y = spot[1];
+            ChessPosition newPosition = new ChessPosition(row + x, col + y);
+
+            if(isValidPosition(newPosition) && board.getPiece(newPosition) == null){
+                moves.add(new ChessMove(myPosition, newPosition, null));
+            }
+            if (isValidPosition(newPosition) && (board.getPiece(newPosition) != null && isDifferentColor(board, myPosition, newPosition))){
+                moves.add(new ChessMove(myPosition, newPosition, null));
+            }
+        }
+        return moves;
+    }
+
     public ArrayList<ChessMove> diagonalHelper(ChessBoard board, ChessPosition myPosition) {
         ArrayList<ChessMove> moves = new ArrayList<>();
         int row = myPosition.getRow();
         int col = myPosition.getColumn();
         int[][] direction = {{1,1}, {-1,1}, {1,-1}, {-1,-1}};
+
+        for(int[] dir : direction){
+            int x = dir[0];
+            int y = dir[1];
+            ChessPosition newPosition = new ChessPosition(row + x, col + y);
+
+            while(isValidPosition(newPosition) && board.getPiece(newPosition) == null){
+                moves.add(new ChessMove(myPosition, newPosition, null));
+                x += dir[0];
+                y += dir[1];
+                newPosition = new ChessPosition(row + x, col + y);
+            }
+
+            if (isValidPosition(newPosition) && isDifferentColor(board, myPosition, newPosition)){
+                moves.add(new ChessMove(myPosition, newPosition, null));
+            }
+        }
+        return moves;
+    }
+
+    public ArrayList<ChessMove> linearHelper(ChessBoard board, ChessPosition myPosition) {
+        ArrayList<ChessMove> moves = new ArrayList<>();
+        int row = myPosition.getRow();
+        int col = myPosition.getColumn();
+        int[][] direction = {{1,0}, {-1,0}, {0,-1}, {0,1}};
 
         for(int[] dir : direction){
             int x = dir[0];
@@ -105,5 +303,4 @@ public class ChessPiece {
         ChessPiece piece2 = board.getPiece(nextPosition);
         return piece1.getTeamColor() != piece2.getTeamColor();
     }
-
 }
