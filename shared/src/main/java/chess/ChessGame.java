@@ -1,9 +1,6 @@
 package chess;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 /**
  * For a class that can manage a chess game, making moves on a board
@@ -44,7 +41,7 @@ public class ChessGame {
     }
 
     /**
-     * Gets a valid moves for a piece at the given location
+     * Gets valid moves for a piece at the given location
      *
      * @param startPosition the piece to get valid moves for
      * @return Set of valid moves for requested piece, or null if no piece at
@@ -73,11 +70,49 @@ public class ChessGame {
     /**
      * Makes a move in a chess game
      *
-     * @param move chess move to preform
+     * @param move chess move to perform
      * @throws InvalidMoveException if move is invalid
      */
     public void makeMove(ChessMove move) throws InvalidMoveException {
-        throw new RuntimeException("Not implemented");
+        ChessPiece selectedPiece = board.getPiece(move.getStartPosition());
+        ChessPosition startPosition = move.getStartPosition();
+        ChessPosition endPosition = move.getEndPosition();
+        //No piece
+        if (selectedPiece == null) {
+            throw new InvalidMoveException("No piece selected.");
+        }
+        //Wrong team
+        if (selectedPiece.getTeamColor() != currentTeam) {
+            throw new InvalidMoveException("It is the other player's turn. Wait for your turn to make a move.");
+        }
+        //Check if the move is valid
+        Collection<ChessMove> possibleMoves = validMoves(startPosition);
+        if (!possibleMoves.contains(move)) {
+            throw new InvalidMoveException("Invalid move. Please choose a valid move.");
+        }
+
+        // Execute the move
+        ChessPiece capturedPiece = board.getPiece(endPosition);
+        board.removePiece(startPosition);
+        if (move.getPromotionPiece() == null) {
+            board.addPiece(endPosition, selectedPiece);
+        } else {
+            ChessPiece promotedPiece = new ChessPiece(currentTeam, move.getPromotionPiece());
+            board.addPiece(endPosition, promotedPiece);
+        }
+
+        // Switch the turn
+        currentTeam = (currentTeam == TeamColor.WHITE) ? TeamColor.BLACK : TeamColor.WHITE;
+
+        // If the move puts the current team in check, undo the move
+        if (isInCheck(selectedPiece.getTeamColor())) {
+            board.addPiece(startPosition, selectedPiece);
+            board.removePiece(endPosition);
+            if (capturedPiece != null) {
+                board.addPiece(endPosition, capturedPiece);
+            }
+            throw new InvalidMoveException("Move puts the king in check. Invalid move.");
+        }
     }
 
     /**
@@ -115,12 +150,27 @@ public class ChessGame {
      * @return True if the specified team is in checkmate
      */
     public boolean isInCheckmate(TeamColor teamColor) {
-        throw new RuntimeException("Not implemented");
+        if (!isInCheck(teamColor)) {
+            return false;
+        }
+
+        for (int x = 1; x <= 8; x++) {
+            for (int y = 1; y <= 8; y++) {
+                ChessPosition piecePosition = new ChessPosition(x, y);
+                ChessPiece piece = board.getPiece(piecePosition);
+                if (piece != null && piece.getTeamColor() == teamColor) {
+                    Collection<ChessMove> possibleMoves = validMoves(piecePosition);
+                    if (!possibleMoves.isEmpty()) {
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
     }
 
     /**
-     * Determines if the given team is in stalemate, which here is defined as having
-     * no valid moves
+     * Determines if the given team is in stalemate
      *
      * @param teamColor which team to check for stalemate
      * @return True if the specified team is in stalemate, otherwise false
@@ -144,42 +194,14 @@ public class ChessGame {
         }
         return true;
     }
-    /**
-     * Sets this game's chessboard with a given board
-     *
-     * @param board the new board to use
-     */
-    public void setBoard(ChessBoard board) {
-        this.board = board;
-    }
-    
-    /**
-     * Gets the current chessboard
-     *
-     * @return the chessboard
-     */
-    public ChessBoard getBoard() {
-        return this.board;
-    }
 
     /**
-     * Determines the position of the king of the team
+     * Determines if a move puts the team's own king in check
      *
-     * @param teamColor
-     * @return Position of the king of the teamColor
+     * @param color the team color to check
+     * @param move  the move to test
+     * @return true if the move puts the team in check, otherwise false
      */
-    private ChessPosition getKingPosition(TeamColor teamColor) {
-        for (int x = 1; x <= 8; x++) {
-            for (int y = 1; y <= 8; y++) {
-                ChessPiece potentialKing = board.getPiece(new ChessPosition(x, y));
-                if (potentialKing != null && potentialKing.getPieceType() == ChessPiece.PieceType.KING && potentialKing.getTeamColor() == teamColor) {
-                    return new ChessPosition(x, y);
-                }
-            }
-        }
-        return null; // Should never happen if the board is correctly set up
-    }
-
     private boolean putsInCheck(TeamColor color, ChessMove move) {
         ChessPosition startPosition = move.getStartPosition();
         ChessPiece selectedPiece = board.getPiece(move.getStartPosition());
@@ -208,6 +230,40 @@ public class ChessGame {
         return inCheck;
     }
 
+    /**
+     * Determines the position of the king of the team
+     *
+     * @param teamColor
+     * @return Position of the king of the teamColor
+     */
+    private ChessPosition getKingPosition(TeamColor teamColor) {
+        for (int x = 1; x <= 8; x++) {
+            for (int y = 1; y <= 8; y++) {
+                ChessPiece potentialKing = board.getPiece(new ChessPosition(x, y));
+                if (potentialKing != null && potentialKing.getPieceType() == ChessPiece.PieceType.KING && potentialKing.getTeamColor() == teamColor) {
+                    return new ChessPosition(x, y);
+                }
+            }
+        }
+        return null; // Should never happen if the board is correctly set up
+    }
+
+    /**
+     * Sets this game's chessboard with a given board
+     *
+     * @param board the new board to use
+     */
+    public void setBoard(ChessBoard board) {
+        this.board = board;
+    }
+
+    /**
+     * Gets the current chessboard
+     *
+     * @return the chessboard
+     */
+    public ChessBoard getBoard() {
+        return this.board;
+    }
+
 }
-
-
