@@ -119,6 +119,27 @@ public class ChessPiece {
         return moves;
     }
 
+    public ArrayList<ChessMove> knightHelper(ChessBoard board, ChessPosition myPosition) {
+        ArrayList<ChessMove> moves = new ArrayList<>();
+        int row = myPosition.getRow();
+        int col = myPosition.getColumn();
+        int[][] spots = {{2,1}, {-2,1}, {2,-1}, {-2,-1}, {1,2}, {-1,2}, {1,-2}, {-1,-2}};
+
+        for(int[] spot : spots){
+            int x = spot[0];
+            int y = spot[1];
+            ChessPosition newPosition = new ChessPosition(row + x, col + y);
+
+            if(isValidPosition(newPosition) && board.getPiece(newPosition) == null){
+                moves.add(new ChessMove(myPosition, newPosition, null));
+            }
+            if (isValidPosition(newPosition) && (board.getPiece(newPosition) != null && isDifferentColor(board, myPosition, newPosition))){
+                moves.add(new ChessMove(myPosition, newPosition, null));
+            }
+        }
+        return moves;
+    }
+
     public ArrayList<ChessMove> queenHelper(ChessBoard board, ChessPosition myPosition) {
         ArrayList<ChessMove> moves = new ArrayList<>();
         moves.addAll(linearHelper(board, myPosition));
