@@ -14,6 +14,19 @@ public class ChessPiece {
     private final ChessGame.TeamColor pieceColor;
     private final ChessPiece.PieceType type;
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ChessPiece piece = (ChessPiece) o;
+        return pieceColor == piece.pieceColor && type == piece.type;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(pieceColor, type);
+    }
+
     public ChessPiece(ChessGame.TeamColor pieceColor, ChessPiece.PieceType type) {
         this.pieceColor = pieceColor;
         this.type = type;
@@ -118,6 +131,110 @@ public class ChessPiece {
         }
         return moves;
     }
+
+
+    public ArrayList<ChessMove> pawnHelper(ChessBoard board, ChessPosition myPosition){
+        ArrayList<ChessMove> moves = new ArrayList<>();
+        int row = myPosition.getRow();
+        int col = myPosition.getColumn();
+
+        if (getTeamColor() == ChessGame.TeamColor.WHITE){
+            //This piece is WHITE
+            //Diagonals
+            int[][] diagonals = {{1,1}, {1,-1}};
+
+            for(int[] diag : diagonals) {
+                int x = diag[0];
+                int y = diag[1];
+                ChessPosition newPosition = new ChessPosition(row + x, col + y);
+
+                if (isValidPosition(newPosition) && (board.getPiece(newPosition) != null && isDifferentColor(board, myPosition, newPosition))) {
+                    //Check conditions for promotion
+
+                    if (row == 7){
+                        moves.add(new ChessMove(myPosition, newPosition, PieceType.QUEEN));
+                        moves.add(new ChessMove(myPosition, newPosition, PieceType.ROOK));
+                        moves.add(new ChessMove(myPosition, newPosition, PieceType.BISHOP));
+                        moves.add(new ChessMove(myPosition, newPosition, PieceType.KNIGHT));
+                    } else {
+                        moves.add(new ChessMove(myPosition, newPosition, null));
+                    }
+                }
+            }
+
+            //Get forward once move
+            ChessPosition newPosition = new ChessPosition(row + 1, col);
+
+            if (isValidPosition(newPosition) && board.getPiece(newPosition) == null) {
+                //Check conditions for promotion
+
+                if (row == 7){
+                    moves.add(new ChessMove(myPosition, newPosition, PieceType.QUEEN));
+                    moves.add(new ChessMove(myPosition, newPosition, PieceType.ROOK));
+                    moves.add(new ChessMove(myPosition, newPosition, PieceType.BISHOP));
+                    moves.add(new ChessMove(myPosition, newPosition, PieceType.KNIGHT));
+                } else {
+                    moves.add(new ChessMove(myPosition, newPosition, null));
+                }
+            }
+            //Get double move
+            ChessPosition doublePosition = new ChessPosition(row + 2, col);
+            ChessPosition singlePosition = new ChessPosition(row + 1, col);
+
+            if (row == 2 && board.getPiece(singlePosition) == null && board.getPiece(doublePosition) == null) {
+                moves.add(new ChessMove(myPosition, doublePosition, null));
+            }
+        } else {
+            //This piece is BLACK
+            //Diagonals
+            int[][] diagonals = {{-1,1}, {-1,-1}};
+
+            for(int[] diag : diagonals) {
+                int x = diag[0];
+                int y = diag[1];
+                ChessPosition newPosition = new ChessPosition(row + x, col + y);
+
+                if (isValidPosition(newPosition) && (board.getPiece(newPosition) != null && isDifferentColor(board, myPosition, newPosition))) {
+                    //Check conditions for promotion
+
+                    if (row == 2){
+                        moves.add(new ChessMove(myPosition, newPosition, PieceType.QUEEN));
+                        moves.add(new ChessMove(myPosition, newPosition, PieceType.ROOK));
+                        moves.add(new ChessMove(myPosition, newPosition, PieceType.BISHOP));
+                        moves.add(new ChessMove(myPosition, newPosition, PieceType.KNIGHT));
+                    } else {
+                        moves.add(new ChessMove(myPosition, newPosition, null));
+                    }
+                }
+            }
+
+            //Get forward once move
+            ChessPosition newPosition = new ChessPosition(row - 1, col);
+
+            if (isValidPosition(newPosition) && board.getPiece(newPosition) == null) {
+                //Check conditions for promotion
+
+                if (row == 2){
+                    moves.add(new ChessMove(myPosition, newPosition, PieceType.QUEEN));
+                    moves.add(new ChessMove(myPosition, newPosition, PieceType.ROOK));
+                    moves.add(new ChessMove(myPosition, newPosition, PieceType.BISHOP));
+                    moves.add(new ChessMove(myPosition, newPosition, PieceType.KNIGHT));
+                } else {
+                    moves.add(new ChessMove(myPosition, newPosition, null));
+                }
+            }
+            //Get double move
+            ChessPosition doublePosition = new ChessPosition(row - 2, col);
+            ChessPosition singlePosition = new ChessPosition(row - 1, col);
+
+            if (row == 7 && board.getPiece(singlePosition) == null && board.getPiece(doublePosition) == null) {
+                moves.add(new ChessMove(myPosition, doublePosition, null));
+            }
+        }
+
+        return moves;
+    }
+
 
     public ArrayList<ChessMove> knightHelper(ChessBoard board, ChessPosition myPosition) {
         ArrayList<ChessMove> moves = new ArrayList<>();
