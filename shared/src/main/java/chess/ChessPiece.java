@@ -69,6 +69,30 @@ public class ChessPiece {
             throw new RuntimeException("Piece not recognized");
         }
     }
+    public ArrayList<ChessMove> diagonalHelper(ChessBoard board, ChessPosition myPosition) {
+        ArrayList<ChessMove> moves = new ArrayList<>();
+        int row = myPosition.getRow();
+        int col = myPosition.getColumn();
+        int[][] direction = {{1,1}, {-1,1}, {1,-1}, {-1,-1}};
+
+        for(int[] dir : direction){
+            int x = dir[0];
+            int y = dir[1];
+            ChessPosition newPosition = new ChessPosition(row + x, col + y);
+
+            while(isValidPosition(newPosition) && board.getPiece(newPosition) == null){
+                moves.add(new ChessMove(myPosition, newPosition, null));
+                x += dir[0];
+                y += dir[1];
+                newPosition = new ChessPosition(row + x, col + y);
+            }
+
+            if (isValidPosition(newPosition) && isDifferentColor(board, myPosition, newPosition)){
+                moves.add(new ChessMove(myPosition, newPosition, null));
+            }
+        }
+        return moves;
+    }
 
     public Boolean isValidPosition(ChessPosition myPosition){
         int row = myPosition.getRow();
