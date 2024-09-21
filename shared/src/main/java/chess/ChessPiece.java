@@ -69,4 +69,16 @@ public class ChessPiece {
             throw new RuntimeException("Piece not recognized");
         }
     }
+
+    public Boolean isValidPosition(ChessPosition myPosition){
+        int row = myPosition.getRow();
+        int col = myPosition.getColumn();
+        return (row >=1 && row <=8 && col >= 1 && col <=8);
+    }
+
+    public Boolean isDifferentColor(ChessBoard board, ChessPosition firstPosition, ChessPosition nextPosition){
+        ChessPiece piece1 = board.getPiece(firstPosition);
+        ChessPiece piece2 = board.getPiece(nextPosition);
+        return piece1.getTeamColor() != piece2.getTeamColor();
+    }
 }
