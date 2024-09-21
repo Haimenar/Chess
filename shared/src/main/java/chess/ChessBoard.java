@@ -60,5 +60,32 @@ public class ChessBoard {
                 this.squares[x][y] = null;
             }
         }
+
+        ChessPiece.PieceType[] typeArray = {ChessPiece.PieceType.ROOK, ChessPiece.PieceType.KNIGHT, ChessPiece.PieceType.BISHOP, ChessPiece.PieceType.QUEEN, ChessPiece.PieceType.KING, ChessPiece.PieceType.BISHOP, ChessPiece.PieceType.KNIGHT, ChessPiece.PieceType.ROOK};
+        int x = 1;
+        int y = 1;
+        //White Pieces
+        for (ChessPiece.PieceType type : typeArray){
+            addPiece(new ChessPosition(x, y), new ChessPiece(ChessGame.TeamColor.WHITE, type));
+            y++;
+        }
+        //White Pawns
+        x = 2;
+        for (int i = 1; i < 9; i++){
+            addPiece(new ChessPosition(x, i), new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.PAWN));
+        }
+        //Black Pieces
+        x = 8;
+        y = 1;
+
+        for (ChessPiece.PieceType type : typeArray){
+            addPiece(new ChessPosition(x, y), new ChessPiece(ChessGame.TeamColor.BLACK, type));
+            y++;
+        }
+        //Black Pawns
+        x = 7;
+        for (int i = 1; i < 9; i++){
+            addPiece(new ChessPosition(x, i), new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.PAWN));
+        }
     }
 }
