@@ -119,6 +119,13 @@ public class ChessPiece {
         return moves;
     }
 
+    public ArrayList<ChessMove> queenHelper(ChessBoard board, ChessPosition myPosition) {
+        ArrayList<ChessMove> moves = new ArrayList<>();
+        moves.addAll(linearHelper(board, myPosition));
+        moves.addAll(diagonalHelper(board, myPosition));
+        return moves;
+    }
+
     public Boolean isValidPosition(ChessPosition myPosition){
         int row = myPosition.getRow();
         int col = myPosition.getColumn();
